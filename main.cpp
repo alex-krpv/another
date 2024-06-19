@@ -1,116 +1,108 @@
-#include "log_duration.h"
-#include "my_assert.h"
-#include "stack_vector.h"
+#include "canvas.h"
+#include "shapes.h"
 
 #include <iostream>
-#include <random>
-#include <stdexcept>
+#include <cassert>
+#include <sstream>
 
-using namespace std;
-
-void TestConstruction() {
-    StackVector<int, 10> v;
-    assert(v.Size() == 0u);
-    assert(v.Capacity() == 10u);
-
-    StackVector<int, 8> u(5);
-    assert(u.Size() == 5u);
-    assert(u.Capacity() == 8u);
-
-    try {
-        StackVector<int, 10> u(50);
-        cout << "Expect invalid_argument for too large size"s << endl;
-        assert(false);
-    } catch (invalid_argument&) {
-    } catch (...) {
-        cout << "Expect invalid_argument for too large size"s << endl;
-        assert(false);
-    }
+std::unique_ptr<Texture> MakeTextureCow() {
+	Image image = { R"(^__^            )",  //
+				   R"((oo)\_______    )",  //
+				   R"((__)\       )\/\)",  //
+				   R"(    ||----w |   )",  //
+				   R"(    ||     ||   )" };
+	return std::make_unique<Texture>(move(image));
 }
 
-void TestPushBack() {
-    StackVector<int, 5> v;
-    for (size_t i = 0; i < v.Capacity(); ++i) {
-        v.PushBack(i);
-    }
+//делает сплошную текстуру из пикселей заданного "цвета" pixel
+std::unique_ptr<Texture> MakeTextureSolid(Size size, char pixel) {
+	Image image(size.height, std::string(size.width, pixel));
+	return std::make_unique<Texture>(move(image));
+}
+//делает текстуру из пикселей с чередующимися "цветами"
+std::unique_ptr<Texture> MakeTextureCheckers(Size size, char pixel1, char pixel2) {
+	Image image(size.height, std::string(size.width, pixel1));
 
-    try {
-        v.PushBack(0);
-        cout << "Expect overflow_error for PushBack in full vector"s << endl;
-        assert(false);
-    } catch (overflow_error&) {
-    } catch (...) {
-        cout << "Unexpected exception for PushBack in full vector"s << endl;
-        assert(false);
-    }
+	for (int i = 0; i < size.height; ++i) {
+		for (int j = 0; j < size.width; ++j) {
+			if ((i + j) % 2 != 0) {
+				image[i][j] = pixel2;
+			}
+		}
+	}
+
+	return std::make_unique<Texture>(move(image));
 }
 
-void TestPopBack() {
-    StackVector<int, 5> v;
-    for (size_t i = 1; i <= v.Capacity(); ++i) {
-        v.PushBack(i);
-    }
-    for (int i = v.Size(); i > 0; --i) {
-        assert(v.PopBack() == i);
-    }
+void TestCpp() {
+	Canvas canvas(Size{ 77, 17 });
 
-    try {
-        v.PopBack();
-        cout << "Expect underflow_error for PopBack from empty vector"s << endl;
-        assert(false);
-    } catch (underflow_error&) {
-    } catch (...) {
-        cout << "Unexpected exception for PopBack from empty vector"s << endl;
-        assert(false);
-    }
+	// Буква "C" как разность двух эллипсов, один из которых нарисован цветом фона
+	canvas.AddShape(ShapeType::ELLIPSE, { 2, 1 }, { 30, 15 },
+		MakeTextureCheckers({ 100, 100 }, 'c', 'C'));
+	canvas.AddShape(ShapeType::ELLIPSE, { 8, 4 }, { 30, 9 }, MakeTextureSolid({ 100, 100 }, ' '));
+
+	// Горизонтальные чёрточки плюсов
+	auto h1 = canvas.AddShape(ShapeType::RECTANGLE, { 54, 7 }, { 22, 3 },
+		MakeTextureSolid({ 100, 100 }, '+'));
+	canvas.DuplicateShape(h1, { 30, 7 });
+
+	// Вертикальные чёрточки плюсов
+	auto v1 = canvas.DuplicateShape(h1, { 62, 3 });
+	canvas.ResizeShape(v1, { 6, 11 });
+	canvas.DuplicateShape(v1, { 38, 3 });
+
+	std::stringstream output;
+	canvas.Print(output);
+
+	const auto answer
+		= "###############################################################################\n"
+		"#                                                                             #\n"
+		"#            cCcCcCcCcC                                                       #\n"
+		"#        CcCcCcCcCcCcCcCcCc                                                   #\n"
+		"#      cCcCcCcCcCcCcCcCcCcCcC          ++++++                  ++++++         #\n"
+		"#    CcCcCcCcCcCc                      ++++++                  ++++++         #\n"
+		"#   CcCcCcCcC                          ++++++                  ++++++         #\n"
+		"#   cCcCcCc                            ++++++                  ++++++         #\n"
+		"#  cCcCcC                      ++++++++++++++++++++++  ++++++++++++++++++++++ #\n"
+		"#  CcCcCc                      ++++++++++++++++++++++  ++++++++++++++++++++++ #\n"
+		"#  cCcCcC                      ++++++++++++++++++++++  ++++++++++++++++++++++ #\n"
+		"#   cCcCcCc                            ++++++                  ++++++         #\n"
+		"#   CcCcCcCcC                          ++++++                  ++++++         #\n"
+		"#    CcCcCcCcCcCc                      ++++++                  ++++++         #\n"
+		"#      cCcCcCcCcCcCcCcCcCcCcC          ++++++                  ++++++         #\n"
+		"#        CcCcCcCcCcCcCcCcCc                                                   #\n"
+		"#            cCcCcCcCcC                                                       #\n"
+		"#                                                                             #\n"
+		"###############################################################################\n";
+
+	assert(answer == output.str());
+}
+
+void TestCow() {
+	Canvas canvas{ {18, 5} };
+
+	canvas.AddShape(ShapeType::RECTANGLE, { 1, 0 }, { 16, 5 }, MakeTextureCow());
+
+	std::stringstream output;
+	canvas.Print(output);
+	//canvas.Print(std::cout);
+	// clang-format off
+	// Здесь уместно использовать сырые литералы, т.к. в текстуре есть символы '\'
+	const auto answer =
+		R"(####################)""\n"
+		R"(# ^__^             #)""\n"
+		R"(# (oo)\_______     #)""\n"
+		R"(# (__)\       )\/\ #)""\n"
+		R"(#     ||----w |    #)""\n"
+		R"(#     ||     ||    #)""\n"
+		R"(####################)""\n";
+	// clang-format on
+
+	assert(answer == output.str());
 }
 
 int main() {
-    TestConstruction();
-    TestPushBack();
-    TestPopBack();
-
-    cerr << "Running benchmark..."s << endl;
-    const size_t max_size = 2500;
-
-    default_random_engine re;
-    uniform_int_distribution<int> value_gen(1, max_size);
-
-    vector<vector<int>> test_data(50000);
-    for (auto& cur_vec : test_data) {
-        cur_vec.resize(value_gen(re));
-        for (int& x : cur_vec) {
-            x = value_gen(re);
-        }
-    }
-
-    {
-        LOG_DURATION("vector w/o reserve");
-        for (auto& cur_vec : test_data) {
-            vector<int> v;
-            for (int x : cur_vec) {
-                v.push_back(x);
-            }
-        }
-    }
-    {
-        LOG_DURATION("vector with reserve");
-        for (auto& cur_vec : test_data) {
-            vector<int> v;
-            v.reserve(cur_vec.size());
-            for (int x : cur_vec) {
-                v.push_back(x);
-            }
-        }
-    }
-    {
-        LOG_DURATION("StackVector");
-        for (auto& cur_vec : test_data) {
-            StackVector<int, max_size> v;
-            for (int x : cur_vec) {
-                v.PushBack(x);
-            }
-        }
-    }
-    cerr << "Done"s << endl;
+	TestCow();
+	TestCpp();
 }
