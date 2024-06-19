@@ -42,26 +42,33 @@ public:
 		if (pos_.x >= image_size.width || pos_.y >= image_size.height) {
 			return;
 		}
+		//если фигура заканчивается до начала изображения 
+		//(возможно при отрицательных координатах начала фигуры)
+		
+		if (size_.width + pos_.x <= 0 || size_.height + pos_.y <= 0) {
+			return;
+		}
+
+
 		//определение наличия текстуры
 		bool is_texture = texture_ptr_? true : false;
 		switch (type_)
 		{
 		case ShapeType::RECTANGLE:
 			
-			/*for (const auto& line : image) {
-				for (const auto& pixel : line) {
-
-				}
-			}*/
 			//перемещаемся по двумерному вектору фигуры и переносим пиксели текстуры на изображение
 			
-			//перемещение по вертикали
+			//перемещение по вертикали фигуры
 			for (int i = 0; i < size_.height; i++)
 			{
 				//проверка выхода за границы изображения по высоте
 				//(все, что выходит - не рисуем)
 				if (pos_.y + i >= image_size.height) {
 					break;
+				}
+				//если координата фигуры отрицательная, то нужно ждать, пока не перекроет изображение
+				if (pos_.y + i < 0) {
+					continue;
 				}
 				
 				//перемещение по горизонтали
@@ -72,10 +79,13 @@ public:
 					if (pos_.x + j >= image_size.width) {
 						break;
 					}
+					if (pos_.x + j < 0) {
+						continue;
+					}
 					if (is_texture) {
 						//проверка выхода за границы текстуры
 						//(все, что снаружи - рисуем '.')
-						if ((pos_.y + i > texture_ptr_->GetSize().height) || (pos_.x + j > texture_ptr_->GetSize().width)) {
+						if ((/*pos_.y +*/ i >= texture_ptr_->GetSize().height) || (/*pos_.x +*/ j >= texture_ptr_->GetSize().width)) {
 							image[pos_.y + i][pos_.x + j] = '.';
 						}
 						else {
@@ -93,7 +103,7 @@ public:
 			break;
 		
 		case ShapeType::ELLIPSE:
-			//inline bool IsPointInEllipse(Point p, Size size)
+			
 			//перемещение по вертикали
 			for (int i = 0; i < size_.height; i++)
 			{
@@ -101,6 +111,9 @@ public:
 				//(все, что выходит - не рисуем)
 				if (pos_.y + i >= image_size.height) {
 					break;
+				}
+				if (pos_.y + i < 0) {
+					continue;
 				}
 
 				//перемещение по горизонтали
@@ -111,12 +124,15 @@ public:
 					if (pos_.x + j >= image_size.width) {
 						break;
 					}
+					if (pos_.x + j < 0) {
+						continue;
+					}
 					//проверка того, что точка внутри эллипса
 					if (IsPointInEllipse({j,i}, size_)) {
 						if (is_texture) {
 							//проверка выхода за границы текстуры
 							//(все, что снаружи - рисуем '.')
-							if ((pos_.y + i > texture_ptr_->GetSize().height) || (pos_.x + j > texture_ptr_->GetSize().width)) {
+							if ((/*pos_.y + */i >= texture_ptr_->GetSize().height) || (/*pos_.x + */j >= texture_ptr_->GetSize().width)) {
 								image[pos_.y + i][pos_.x + j] = '.';
 							}
 							else {

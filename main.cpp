@@ -102,7 +102,15 @@ void TestCow() {
 	assert(answer == output.str());
 }
 
+void TestNegativeCoords() {
+	Canvas canvas{ {18, 5} };
+	canvas.AddShape(ShapeType::RECTANGLE, { 0, 0 }, { 18, 5 }, MakeTextureSolid({ 100, 100 }, '*'));
+	canvas.AddShape(ShapeType::RECTANGLE, { 9, 2 }, { 2, 2 }, MakeTextureSolid({ 1, 1 }, '+'));
+	canvas.Print(std::cout);
+}
+
 int main() {
-	TestCow();
-	TestCpp();
+	//TestCow();
+	//TestCpp();
+	TestNegativeCoords();
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+#include <cassert>
+
 class Texture {
 public:
 	explicit Texture(Image image)
@@ -12,6 +14,7 @@ public:
 	}
 
 	char GetPixelColor(Point p) const {
+		//assert(p.y >= 0 && p.x >= 0);
 		return image_[p.y][p.x];
 	}
 
