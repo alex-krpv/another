@@ -97,5 +97,21 @@ int main() {
 	    },
 	    cout
 	);
-	cout << endl;
+	cout << endl << "array in array\n"s;
+    json::Print(
+        json::Document{
+            json::Builder{}
+            .StartArray()
+                    .Value(456)
+                    .StartArray()
+                    .Value(123.5)
+                    .Value("hello"s)
+                    .EndArray()
+                    .Value(false)
+                    .Value(nullptr)
+            .EndArray()
+            .Build()
+        },
+        std::cout
+    );
 }

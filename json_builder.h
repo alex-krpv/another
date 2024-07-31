@@ -59,6 +59,11 @@ namespace json {
 		std::vector<Node*> nodes_stack_;
 		//хранение ключа для словаря
 		std::optional<std::string> key_;
+		//вектор внутренних билдеров
+		std::vector<Builder> inner_builders_;
+
+		Builder MakeInnerArray();
+		Node* GetRootPtr();
 	};
 
 	/*Builder::Builder()

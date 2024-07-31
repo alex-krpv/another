@@ -47,8 +47,14 @@ namespace json {
 		//если в векторе указателей пусто - это начало работы
 		if (std::holds_alternative<nullptr_t>(nodes_stack_.back()->GetValue())) {
 			nodes_stack_.back()->GetValue() = json::Array{};
+			return *this;
 		}
-		return *this;
+		//Builder result;
+		inner_builders_.emplace_back(Builder{});
+		inner_builders_.back().StartArray();
+		nodes_stack_.emplace_back(inner_builders_.back().GetRootPtr());
+		
+		return inner_builders_.back();
 	}
 
 	Builder& Builder::EndArray() {
@@ -208,5 +214,13 @@ namespace json {
 	/*Builder::~Builder()
 	{
 	}*/
-
+	Builder Builder::MakeInnerArray() {
+		Builder result;
+		result.StartArray();
+		return result;
+	}
+	
+	Node* Builder::GetRootPtr() {
+		return &root_;
+	}
 }//namespace json
