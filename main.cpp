@@ -75,11 +75,27 @@ int main() {
                     .Value(456)
                     .Value(123.5)
                     .Value("hello"s)
-                    .Value(""s)
+					.Value(false)
+					.Value(nullptr)
             .EndArray()
             .Build()
         },
         std::cout
     );
     std::cout << endl;
+
+	json::Print(
+	    json::Document{
+	        json::Builder{}
+	        .StartDict()
+	            .Key("key1"s).Value(123)
+	            .Key("key2"s).Value("value2"s)
+	            .Key("key3"s).Value(nullptr)
+
+	        .EndDict()
+	        .Build()
+	    },
+	    cout
+	);
+	cout << endl;
 }

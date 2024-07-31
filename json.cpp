@@ -1,6 +1,8 @@
 #include "json.h"
 
+#include <cctype>
 #include <iterator>
+#include <string_view>
 
 namespace json {
 

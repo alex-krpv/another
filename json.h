@@ -22,7 +22,9 @@ class Node final
 public:
     using variant::variant;
     using Value = variant;
-
+	//Node() = default;
+	//Node(const Node&) = default;
+	//Node(Node&&) = default;
     bool IsInt() const {
         return std::holds_alternative<int>(*this);
     }
@@ -107,6 +109,11 @@ public:
     const Value& GetValue() const {
         return *this;
     }
+
+	Value& GetValue() {
+		return *this;
+	}
+
 };
 
 inline bool operator!=(const Node& lhs, const Node& rhs) {
