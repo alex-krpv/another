@@ -142,6 +142,31 @@
 //сразу после конструирования этот объект будет цепочкой методов, 
 //оканчивающейся на Build, преобразовываться в json::Node.
 
+//Проверка ошибок:
+//Правило1 - Непосредственно после Key вызван не Value, не StartDict и не StartArray
+//json::Builder{}.StartDict().Key("key1"s).Key("key3"s);
+//json::Builder{}.StartDict().Key("key1"s).EndDict();
+//json::Builder{}.StartDict().Key("key1"s).EndArray();
+
+//Правило2 - после вызова Value, последовавшего за вызовом Key, вызван не Key и не EndDict
+//json::Builder{}.StartDict().Key("key1"s).Value(123).Value(123);
+//json::Builder{}.StartDict().Key("key1"s).Value(123).Build();
+//json::Builder{}.StartDict().Key("key1"s).Value(123).StartArray();
+
+//Правило3 - за вызовом StartDict следует не Key и не EndDict
+//json::Builder{}.StartDict().Build();
+//json::Builder{}.StartDict().Value(123);
+//json::Builder{}.StartDict().StartArray();
+
+//Правило4 - за вызовом StartArray следует не Value, не StartArray, не StartDict и не EndArray
+//json::Builder{}.StartArray().Key("key1"s);
+//json::Builder{}.StartArray().EndDict();
+
+//Правило5 - за вызовом StartArray и серии Value следует не Value, не StartArray, не StartDict и не EndArray
+//json::Builder{}.StartArray().Value(123).Value(123).Key("key1"s);
+//json::Builder{}.StartArray().Value(123).Value(123).EndDict();
+//json::Builder{}.StartArray().Value(123).Value(123).Build();
+
 //Подсказка
 
 //Мы рекомендуем хранить в объекте json::Builder следующее состояние :
@@ -168,3 +193,21 @@
 //Таким образом все манипуляции с указателями на стеке привели к тому, 
 //что значение в root изменилось и стало равно пустому массиву(Array{}) - и сам стек оказался пуст.
 //Поэтому вызов метода Build() не должен выдавать ошибок в такой ситуации.
+
+//Никаких новых builder создавать не надо. 
+//Новый массив (словарь) можно добавлять используя StartArray - StartDict в двух случаях : 
+//1)когда на вершине nullptr  - тогда по схеме что я описал выше нужно делать 
+//(замечу, что nullptr на вершине стека будет и в том случае, если на добавляется value в уже имеющийся dict[key]), 
+
+//2)если на  вершине стеке уже Array - тогда нужно в имеющийся массив просто добавить новый элемент, 
+//а в стек поместить указатель на этот добавленный элемент.
+
+
+
+//json::Builder{}.Value("s"s).Key("1"s).Build()
+//json::Builder{}.Value("s"s).Value("1"s).Build()
+//json::Builder{}.Value("s"s).StartDict().Build()
+//json::Builder{}.Value("s"s).StartArray().Build()
+//json::Builder{}.Value("s"s).EndDict().Build()
+//json::Builder{}.Value("s"s).EndArray().Build()
+

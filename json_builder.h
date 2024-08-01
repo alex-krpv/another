@@ -8,9 +8,7 @@ namespace json {
 	class Builder
 	{
 	public:
-		Builder() {
-			nodes_stack_.push_back(&root_);
-		};
+		Builder();
 		
 		//При определении словаря задаёт строковое значение ключа для очередной пары ключ - значение.
 		//Следующий вызов метода обязательно должен задавать соответствующее этому ключу значение 
@@ -62,7 +60,6 @@ namespace json {
 		//вектор внутренних билдеров
 		std::vector<Builder> inner_builders_;
 
-		Builder MakeInnerArray();
 		Node* GetRootPtr();
 	};
 
