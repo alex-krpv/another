@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
 #include <map>
@@ -21,10 +21,10 @@ class Node final
     : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
 public:
     using variant::variant;
-    using Value = variant;
-	//Node() = default;
-	//Node(const Node&) = default;
-	//Node(Node&&) = default;
+	using Value = variant;
+	Node() = default;
+    Node(Value value) : variant(std::move(value)) {}
+
     bool IsInt() const {
         return std::holds_alternative<int>(*this);
     }
@@ -109,11 +109,9 @@ public:
     const Value& GetValue() const {
         return *this;
     }
-
-	Value& GetValue() {
-		return *this;
-	}
-
+    Value& GetValue() {
+        return *this;
+    }
 };
 
 inline bool operator!=(const Node& lhs, const Node& rhs) {
