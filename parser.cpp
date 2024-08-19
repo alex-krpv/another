@@ -32,12 +32,29 @@ public:
         budget.AddBulkOperation(GetFrom(), GetTo(), BulkMoneyAdder{day_income});
     }
 
-    class Factory : public QueryFactory {
+    /*class Factory : public QueryFactory {
     public:
         std::unique_ptr<Query> Construct(std::string_view config) const override {
             auto parts = Split(config, ' ');
             double payload = std::stod(std::string(parts[2]));
             return std::make_unique<Alter>(Date::FromString(parts[0]), Date::FromString(parts[1]), payload);
+        }
+    };*/
+    class FactoryIncome : public QueryFactory {
+    public:
+        std::unique_ptr<Query> Construct(std::string_view config) const override {
+            auto parts = Split(config, ' ');
+            double payload = std::stod(std::string(parts[2]));
+            return std::make_unique<Alter>(Date::FromString(parts[0]), Date::FromString(parts[1]), payload);
+        }
+    };
+
+    class FactorySpend : public QueryFactory {
+    public:
+        std::unique_ptr<Query> Construct(std::string_view config) const override {
+            auto parts = Split(config, ' ');
+            double payload = std::stod(std::string(parts[2]));
+            return std::make_unique<Alter>(Date::FromString(parts[0]), Date::FromString(parts[1]), -payload);
         }
     };
 
@@ -68,10 +85,14 @@ private:
 
 const QueryFactory& QueryFactory::GetFactory(std::string_view id) {
     static queries::ComputeIncome::Factory compute_income;
-    static queries::Alter::Factory earn;
+    //static queries::Alter::Factory earn;
+    static queries::Alter::FactoryIncome earn;
+    static queries::Alter::FactorySpend spend;
     static queries::PayTax::Factory pay_tax;
+    /*static std::unordered_map<std::string_view, const QueryFactory&> factories
+        = {{"ComputeIncome"sv, compute_income}, {"Earn"sv, earn}, {"PayTax"sv, pay_tax}};*/
     static std::unordered_map<std::string_view, const QueryFactory&> factories
-        = {{"ComputeIncome"sv, compute_income}, {"Earn"sv, earn}, {"PayTax"sv, pay_tax}};
+        = { {"ComputeIncome"sv, compute_income}, {"Earn"sv, earn}, {"Spend"sv, spend}, {"PayTax"sv, pay_tax} };
 
     return factories.at(id);
 }
