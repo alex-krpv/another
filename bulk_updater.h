@@ -10,13 +10,24 @@ struct BulkMoneyAdder {
     double delta = {};
 };
 
-struct BulkTaxApplier {
-    double ComputeFactor() const {
-        static const double factor = 0.87;
-        return std::pow(factor, count);
-    }
+//struct BulkTaxApplier {
+//    double ComputeFactor() const {
+//        static const double factor = 0.87;
+//        return std::pow(factor, count);
+//    }
+//
+//    int count = 0;
+//};
 
-    int count = 0;
+struct BulkTaxApplier {
+	double ComputeFactor() const {
+		//static const double factor = 0.87;
+		double factor = (100.0 - percent) / 100.0;
+		return std::pow(factor, count);
+	}
+
+	int count = 0;
+	int percent = 13;
 };
 
 class BulkLinearUpdater {

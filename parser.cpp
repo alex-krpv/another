@@ -65,20 +65,28 @@ private:
 class PayTax : public ModifyQuery {
 public:
     using ModifyQuery::ModifyQuery;
-
-    void Process(BudgetManager& budget) const override {
+	PayTax(Date from, Date to, int tax_percent)
+		: ModifyQuery(from, to)
+		, tax_percent_(tax_percent) {
+	}
+    /*void Process(BudgetManager& budget) const override {
         budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{1});
-    }
+    }*/
+	void Process(BudgetManager& budget) const override {
+		budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{ 1, tax_percent_});
+	}
 
     class Factory : public QueryFactory {
     public:
         std::unique_ptr<Query> Construct(std::string_view config) const override {
             auto parts = Split(config, ' ');
-            return std::make_unique<PayTax>(Date::FromString(parts[0]), Date::FromString(parts[1]));
+			auto tax_percent = std::stoi(std::string(parts[2]));
+            return std::make_unique<PayTax>(Date::FromString(parts[0]), Date::FromString(parts[1]), tax_percent);
         }
     };
 
 private:
+	int tax_percent_;
 };
 
 }  // namespace queries
