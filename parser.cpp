@@ -29,7 +29,13 @@ public:
     void Process(BudgetManager& budget) const override {
         double day_income = amount_ / (Date::ComputeDistance(GetFrom(), GetTo()) + 1);
 
-        budget.AddBulkOperation(GetFrom(), GetTo(), BulkMoneyAdder{day_income});
+		if (day_income >= 0) {
+			budget.AddBulkOperation(GetFrom(), GetTo(), BulkMoneyAdder{ day_income,0 });
+		}
+		if (day_income < 0) {
+			budget.AddBulkOperation(GetFrom(), GetTo(), BulkMoneyAdder{ 0, -day_income });
+		}
+		
     }
 
     /*class Factory : public QueryFactory {
@@ -65,15 +71,16 @@ private:
 class PayTax : public ModifyQuery {
 public:
     using ModifyQuery::ModifyQuery;
-	PayTax(Date from, Date to, int tax_percent)
+	PayTax(Date from, Date to, double rate)
 		: ModifyQuery(from, to)
-		, tax_percent_(tax_percent) {
+		, rate_(rate) {
 	}
     /*void Process(BudgetManager& budget) const override {
         budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{1});
     }*/
 	void Process(BudgetManager& budget) const override {
-		budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{ 1, tax_percent_});
+		//budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{ 1, tax_percent_});
+		budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{ 1-rate_ });
 	}
 
     class Factory : public QueryFactory {
@@ -81,12 +88,14 @@ public:
         std::unique_ptr<Query> Construct(std::string_view config) const override {
             auto parts = Split(config, ' ');
 			auto tax_percent = std::stoi(std::string(parts[2]));
-            return std::make_unique<PayTax>(Date::FromString(parts[0]), Date::FromString(parts[1]), tax_percent);
+            //return std::make_unique<PayTax>(Date::FromString(parts[0]), Date::FromString(parts[1]), tax_percent);
+			return std::make_unique<PayTax>(Date::FromString(parts[0]), Date::FromString(parts[1]), tax_percent / 100.0);
         }
     };
 
 private:
-	int tax_percent_;
+	//int tax_percent_;
+	double rate_;
 };
 
 }  // namespace queries

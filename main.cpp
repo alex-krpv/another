@@ -64,21 +64,57 @@ namespace tests {
 //18.96
 //8.46
 //8.46
-	void RequestApply() {
-        BudgetManager manager;
-        ParseAndProcessQuery(manager, "Earn 2000-01-02 2000-01-06 20"s);
-        //assert(manager.GetEarnings(Date{ 2000,1,1 }, Date{ 2099,12,31 }) == 20);
-        ParseAndProcessQuery(manager, "ComputeIncome 2000-01-02 2001-01-01"s);
-        ParseAndProcessQuery(manager, "PayTax 2000-01-02 2000-01-03 13"s);
-        //assert(std::abs(manager.GetEarnings(Date{ 2000,1,1 }, Date{ 2001,1,1 }) - 18.96) < EPSILON);
-		ParseAndProcessQuery(manager, "ComputeIncome 2000-01-01 2001-01-01"s);
-        ParseAndProcessQuery(manager, "Spend 2000-12-30 2001-01-02 14"s);
-		ParseAndProcessQuery(manager, "ComputeIncome 2000-01-01 2001-01-01"s);
-        //assert(std::abs(manager.GetEarnings(Date{ 2000,1,1 }, Date{ 2001,1,1 }) - 8.46) < EPSILON);
-        ParseAndProcessQuery(manager, "PayTax 2000-12-30 2000-12-30 13"s);
-		ParseAndProcessQuery(manager, "ComputeIncome 2000-01-01 2001-01-01"s);
-        //assert(std::abs(manager.GetEarnings(Date{ 2000,1,1 }, Date{ 2001,1,1 }) - 8.46) < EPSILON);
 
+	//Earn 2001 - 02 - 12 2001 - 02 - 23 12000
+//ComputeIncome 2001 - 02 - 05 2001 - 02 - 16
+//PayTax 2001 - 02 - 01 2001 - 02 - 14 43
+//ComputeIncome 2001 - 02 - 03 2001 - 02 - 13
+//PayTax 2001 - 02 - 07 2001 - 02 - 23 28
+//ComputeIncome 2001 - 02 - 12 2001 - 02 - 23
+//
+//Вывод:
+//5000
+//1140
+//7711.2
+	void RequestApply() {
+		
+		//проверка правильности расчета налогов
+		{
+			BudgetManager manager;
+			ParseAndProcessQuery(manager, "Earn 2001-02-12 2001-02-23 12000"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2001-02-05 2001-02-16"s); //5000
+			ParseAndProcessQuery(manager, "PayTax 2001-02-01 2001-02-14 43"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2001-02-03 2001-02-13"s); //1140
+			ParseAndProcessQuery(manager, "PayTax 2001-02-07 2001-02-23 28"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2001-02-12 2001-02-23"s); //7711.2
+		}
+		//проверка правильности расчета трат
+		{
+			BudgetManager manager;
+			ParseAndProcessQuery(manager, "Earn 2001-02-12 2001-02-23 12000"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2001-02-12 2001-02-23"s); 	
+			ParseAndProcessQuery(manager, "Spend 2001-02-12 2001-02-23 10000"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2001-02-12 2001-02-23"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2001-02-12 2001-02-23"s);
+		}
+		//проверка примера из условия задачи
+		{
+			BudgetManager manager;
+			
+			ParseAndProcessQuery(manager, "Earn 2000-01-02 2000-01-06 20"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2000-01-02 2001-01-01"s);
+			ParseAndProcessQuery(manager, "PayTax 2000-01-02 2000-01-03 13"s);
+
+			ParseAndProcessQuery(manager, "ComputeIncome 2000-01-01 2001-01-01"s);
+			ParseAndProcessQuery(manager, "Spend 2000-12-30 2001-01-02 14"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2000-01-01 2001-01-01"s);
+
+			ParseAndProcessQuery(manager, "PayTax 2000-12-30 2000-12-30 13"s);
+			ParseAndProcessQuery(manager, "ComputeIncome 2000-01-01 2001-01-01"s);
+			
+
+
+		}
     }
 }
 
