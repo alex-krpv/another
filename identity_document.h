@@ -24,11 +24,11 @@ public:
 		: vtable_(vtable),
 		unique_id_(++unique_id_count_)
 	{
-		std::cout << "IdentityDocument::Ctor() : "sv << unique_id_ << std::endl;
+		std::cout << "IdentityDocument::Ctor(v) : "sv << unique_id_ << std::endl;
 	}
 
 
-    virtual ~IdentityDocument() {
+    /*virtual*/ ~IdentityDocument() {
         --unique_id_count_;
         std::cout << "IdentityDocument::Dtor() : "sv << unique_id_ << std::endl;
     }
@@ -40,6 +40,8 @@ public:
     }
 
     IdentityDocument& operator=(const IdentityDocument&) = delete;
+
+    //IdentityDocument(IdentityDocument&& other) = delete;
 
     void PrintID() const {
         //VirtPrintID(unique_id_);
@@ -58,8 +60,8 @@ public:
     }
 
 private:
-	//таблица виртуальных функций
-	static VTable Ident_vtable_;
+    //таблица виртуальных функций
+    static VTable Ident_vtable_;
 
 	VTable* vtable_ = &Ident_vtable_;
 	

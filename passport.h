@@ -50,7 +50,8 @@ using namespace std::string_view_literals;
 class Passport {
 	struct VTable {
 		//void(*printIDptr)(int, const tm&) = VirtPrintID;
-		void(*printIDptr)(const Passport*) = VirtPrintID;
+		//void(*printIDptr)(const Passport*) = VirtPrintID;
+		void(*printIDptr)(void*) = VirtPrintID;
 	};
 public:
 	Passport()
@@ -69,24 +70,33 @@ public:
 
 	~Passport() {
 		std::cout << "Passport::Dtor()"sv << std::endl;
+		identity_document_.~IdentityDocument();
 	}
 
-	void PrintID() const {
+	operator IdentityDocument() { 
+		return identity_document_; 
+	}
+
+	void PrintID() /*const*/ {
 		/*std::cout << "Passport::PrintID() : "sv << identity_document_.GetID();
 		std::cout << " expiration date : "sv << expiration_date_.tm_mday << "/"sv << expiration_date_.tm_mon << "/"sv
 			<< expiration_date_.tm_year + 1900 << std::endl;*/
-		VirtPrintID(this);
+		//VirtPrintID(this);
+		vtable_->printIDptr(this);
 		
 	}
 
-	virtual void PrintVisa(const std::string& country) const {
+	/*virtual*/ void PrintVisa(const std::string& country) const {
 		std::cout << "Passport::PrintVisa("sv << country << ") : "sv << identity_document_.GetID() << std::endl;
+	}
+
+	void PrintUniqueIDCount() {
+		IdentityDocument::PrintUniqueIDCount();
 	}
 
 private:
 	//таблица виртуальных функций
 	static VTable passport_vtable_;
-
 	VTable* vtable_ = &passport_vtable_;
 	const IdentityDocument& identity_document_;
 	const struct tm expiration_date_;
@@ -99,10 +109,17 @@ private:
 		return exp_date;
 	}
 
-	static void VirtPrintID(const Passport* passport) {
+	/*static void VirtPrintID(const Passport* passport) {
 		std::cout << "Passport::PrintID() : "sv << passport->identity_document_.GetID();
 		std::cout << " expiration date : "sv << passport->expiration_date_.tm_mday << "/"sv << passport->expiration_date_.tm_mon << "/"sv
 			<< passport->expiration_date_.tm_year + 1900 << std::endl;
+	}*/
+	static void VirtPrintID(void* passport) {
+		auto ptr = reinterpret_cast<Passport*>(passport);
+		std::cout << "Passport::PrintID() : "sv << ptr->identity_document_.GetID();
+		std::cout << " expiration date : "sv << ptr->expiration_date_.tm_mday << "/"sv 
+			<< ptr->expiration_date_.tm_mon << "/"sv
+			<< ptr->expiration_date_.tm_year + 1900 << std::endl;
 	}
 };
 

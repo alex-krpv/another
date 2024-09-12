@@ -70,7 +70,7 @@ public:
 		std::cout << "TravelPack::Dtor()"sv << std::endl;
 	}
 
-	void PrintID() const {
+	void PrintID() /*const*/ {
 		identity_doc1_->PrintID();
 		identity_doc2_->PrintID();
 		additional_pass_.PrintID();

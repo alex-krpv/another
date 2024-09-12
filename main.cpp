@@ -18,6 +18,7 @@ void PrintInfo() {
 
 void PrintInfo(const Passport& pass) {
     pass.PrintVisa("France"s);
+    //pass.PrintID();
 }
 
 IdentityDocument PrintInfo(int i) {
