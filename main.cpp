@@ -46,7 +46,7 @@ int main() {
     }
 
     for (size_t i = 0; i < docs.size(); ++i) {
-        //docs[i]->Delete();
+        docs[i]->Delete();
     }
 
     cout << "Test3"sv << endl;
@@ -61,7 +61,16 @@ int main() {
     cout << "Test4"sv << endl;
     IdentityDocument::PrintUniqueIDCount();
 
-    cout << "Test5"sv << endl;
+    /*cout << "Test5"sv << endl;
     Passport pass2;
-    pass2.PrintUniqueIDCount();
+    pass2.PrintUniqueIDCount();*/
+	cout << "Test5"sv << endl;
+	{
+		Passport pass2;
+		pass2.PrintUniqueIDCount();
+	}
+	cout << "Test6 - travel_pack"sv << endl;
+	TravelPack pack;
+	pack.PrintID();
+
 }

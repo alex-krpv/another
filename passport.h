@@ -52,6 +52,8 @@ class Passport {
 		//void(*printIDptr)(int, const tm&) = VirtPrintID;
 		//void(*printIDptr)(const Passport*) = VirtPrintID;
 		void(*printIDptr)(void*) = VirtPrintID;
+		void(*deleteptr)(void*) = VirtDelete;
+		void(*destructptr)(void*) = VirtDestruct;
 	};
 public:
 	Passport()
@@ -69,8 +71,14 @@ public:
 	}
 
 	~Passport() {
+	//Порядок действий при вызове деструктора:
+	//Просто удаляем объект и не химичим, положась на компилятор;
+	//Если объект наследуемого класса, то не забыть переставить указатель vtable 
+	//на виртуальную таблицу базового класса.
 		std::cout << "Passport::Dtor()"sv << std::endl;
-		identity_document_.~IdentityDocument();
+		//identity_document_.~IdentityDocument();
+		identity_document_.SetVtable(identity_document_.GetVtable());
+		//vtable_->destrustptr;
 	}
 
 	operator IdentityDocument() { 
@@ -94,11 +102,16 @@ public:
 		IdentityDocument::PrintUniqueIDCount();
 	}
 
+	void Delete() {
+		//this-> ~Passport();
+		vtable_->deleteptr(this);
+	}
+
 private:
 	//таблица виртуальных функций
 	static VTable passport_vtable_;
 	VTable* vtable_ = &passport_vtable_;
-	const IdentityDocument& identity_document_;
+	IdentityDocument identity_document_;
 	const struct tm expiration_date_;
 
 	tm GetExpirationDate() {
@@ -120,6 +133,16 @@ private:
 		std::cout << " expiration date : "sv << ptr->expiration_date_.tm_mday << "/"sv 
 			<< ptr->expiration_date_.tm_mon << "/"sv
 			<< ptr->expiration_date_.tm_year + 1900 << std::endl;
+	}
+
+	static void VirtDestruct(void* passport) {
+		auto ptr = reinterpret_cast<Passport*>(passport);
+		ptr-> ~Passport();
+
+	}
+	static void VirtDelete(void* passport) {
+		auto ptr = reinterpret_cast<Passport*>(passport);
+		ptr-> ~Passport();
 	}
 };
 
